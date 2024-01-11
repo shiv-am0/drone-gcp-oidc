@@ -16,7 +16,6 @@ To learn how to utilize Drone plugins in Harness CI, please consult the provided
 
 | Parameter                                                                                                                           | Choices/<span style="color:blue;">Defaults</span> | Comments                                             |
 | :---------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------ | ---------------------------------------------------- |
-| oidc_id_token <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>         |                                                   | This token is used for authenticating with GCP.      |
 | project_number <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>        |                                                   | The project number associated with your GCP project. |
 | pool_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>               |                                                   | The pool ID for OIDC authentication.                 |
 | provider_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>           |                                                   | The provider ID for OIDC authentication.             |
@@ -48,7 +47,6 @@ The plugin is available for the following architectures:
         connectorRef: harness-docker-connector
         image: harnesscommunity/drone-gcp-oidc:linux-amd64
         settings:
-                oidc_id_token: <+secrets.getValue("oidc-token")>
                 project_number: 22819301
                 pool_id: d8291ka22
                 pool_id: kda91fa
