@@ -20,6 +20,7 @@ To learn how to utilize Drone plugins in Harness CI, please consult the provided
 | pool_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>               |                                                   | The pool ID for OIDC authentication.                 |
 | provider_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>           |                                                   | The provider ID for OIDC authentication.             |
 | service_account_email <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span> |                                                   | The email address of the service account.            |
+| service_account_name <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span> |                                                   | The name of the service account.            |
 
 ## Notes
 
@@ -51,6 +52,7 @@ The plugin is available for the following architectures:
                 pool_id: d8291ka22
                 pool_id: kda91fa
                 service_account_email: test-gcp@harness.io
+                service_account: svr-account1
 
 
 # Run step to use the access token to list the compute zones
