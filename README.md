@@ -14,15 +14,16 @@ To learn how to utilize Drone plugins in Harness CI, please consult the provided
 
 ## Parameters
 
-| Parameter                                                                                                                           | Choices/<span style="color:blue;">Defaults</span> | Comments                                             |
-| :---------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------ | ---------------------------------------------------- |
-| project_number <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>        |                                                   | The project number associated with your GCP project. |
-| pool_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>               |                                                   | The pool ID for OIDC authentication.                 |
-| provider_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>           |                                                   | The provider ID for OIDC authentication.             |
-| service_account_email <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span> |                                                   | The email address of the service account.            |
-| service_account_name <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span> |                                                   | The name of the service account.            |
+| Parameter                                                                                                                              | Choices/<span style="color:blue;">Defaults</span> | Comments                                         |
+| :------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------ | ------------------------------------------------ |
+| project_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>               |                                                   | The project id associated with your GCP project. |
+| pool_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>                  |                                                   | The pool ID for OIDC authentication.             |
+| provider_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>              |                                                   | The provider ID for OIDC authentication.         |
+| service_account_email_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span> |                                                   | The email address of the service account.        |
 
 ## Notes
+
+This plugin also requires an OIDC token `PLUGIN_OIDC_TOKEN_ID`, provided as a stage variable.
 
 The plugin outputs the access token in the form of an environment variable that can be accessed in the subsequent pipeline steps like this: `<+steps.STEP_ID.output.outputVariables.GCLOUD_ACCESS_TOKEN>`
 
@@ -30,11 +31,12 @@ The plugin outputs the access token in the form of an environment variable that 
 
 The plugin is available for the following architectures:
 
-| OS            | Tag             |
-| ------------- | --------------- |
-| linux/amd64   | `linux-amd64`   |
-| linux/arm64   | `linux-arm64`   |
-| windows/amd64 | `windows-amd64` |
+| OS            | Tag                                |
+| ------------- | ---------------------------------- |
+| latest        | `linux-amd64/arm64, windows-amd64` |
+| linux/amd64   | `linux-amd64`                      |
+| linux/arm64   | `linux-arm64`                      |
+| windows/amd64 | `windows-amd64`                    |
 
 ## Examples
 
@@ -46,13 +48,12 @@ The plugin is available for the following architectures:
     identifier: drone_gcp_oidc_plugin
     spec:
         connectorRef: harness-docker-connector
-        image: harnesscommunity/drone-gcp-oidc:linux-amd64
+        image: harnesscommunity/drone-gcp-oidc:latest
         settings:
-                project_number: 22819301
+                project_id: 22819301
                 pool_id: d8291ka22
-                pool_id: kda91fa
-                service_account_email: test-gcp@harness.io
-                service_account: svr-account1
+                service_account_email_id: test-gcp@harness.io
+                provider_id: svr-account1
 
 
 # Run step to use the access token to list the compute zones
