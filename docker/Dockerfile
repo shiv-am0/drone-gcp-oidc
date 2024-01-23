@@ -1,6 +1,4 @@
-FROM scratch
-
-RUN apk --no-cache add ca-certificates
+FROM alpine:latest
 
 ADD release/linux/amd64/drone-oidc /bin/
 
