@@ -48,7 +48,7 @@ The plugin is available for the following architectures:
     identifier: drone_gcp_oidc_plugin
     spec:
         connectorRef: harness-docker-connector
-        image: harnesscommunity/drone-gcp-oidc:latest
+        image: harness/drone-gcp-oidc:latest
         settings:
                 project_id: 22819301
                 pool_id: d8291ka22
