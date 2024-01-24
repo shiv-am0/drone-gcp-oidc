@@ -1,4 +1,8 @@
-package gcp
+// Copyright 2020 the Drone Authors. All rights reserved.
+// Use of this source code is governed by the Blue Oak Model License
+// that can be found in the LICENSE file.
+
+package plugin
 
 import (
 	"context"
@@ -22,7 +26,7 @@ func GetFederalToken(idToken, projectNumber, poolId, providerId string) (string,
 	ctx := context.Background()
 	stsService, err := sts.NewService(ctx, option.WithoutAuthentication())
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create sts service: %w", err)
 	}
 	audience := fmt.Sprintf("//iam.googleapis.com/projects/%s/locations/global/workloadIdentityPools/%s/providers/%s", projectNumber, poolId, providerId)
 	tokenRequest := &sts.GoogleIdentityStsV1ExchangeTokenRequest{
@@ -35,7 +39,7 @@ func GetFederalToken(idToken, projectNumber, poolId, providerId string) (string,
 	}
 	tokenResponse, err := stsService.V1.Token(tokenRequest).Do()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to exchange token: %w", err)
 	}
 
 	return tokenResponse.AccessToken, nil
@@ -48,7 +52,7 @@ func GetGoogleCloudAccessToken(federatedToken string, serviceAccountEmail string
 	}
 	service, err := iamcredentials.NewService(ctx, option.WithTokenSource(tokenSource))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create iamcredentials service: %w", err)
 	}
 
 	name := "projects/-/serviceAccounts/" + serviceAccountEmail
@@ -58,7 +62,7 @@ func GetGoogleCloudAccessToken(federatedToken string, serviceAccountEmail string
 
 	resp, err := service.Projects.ServiceAccounts.GenerateAccessToken(name, rb).Do()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to generate access token: %w", err)
 	}
 
 	return resp.AccessToken, nil
