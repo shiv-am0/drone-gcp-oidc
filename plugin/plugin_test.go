@@ -169,6 +169,7 @@ func TestGetGoogleCloudAccessToken(t *testing.T) {
 	type args struct {
 		federatedToken      string
 		serviceAccountEmail string
+		duration            string
 	}
 
 	tests := []struct {
@@ -181,6 +182,7 @@ func TestGetGoogleCloudAccessToken(t *testing.T) {
 			args: args{
 				federatedToken:      "federated-token",
 				serviceAccountEmail: "service-account-email",
+				duration:            "3600",
 			},
 			wantErr: true,
 		},
@@ -188,7 +190,7 @@ func TestGetGoogleCloudAccessToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := GetGoogleCloudAccessToken(tt.args.federatedToken, tt.args.serviceAccountEmail)
+			_, err := GetGoogleCloudAccessToken(tt.args.federatedToken, tt.args.serviceAccountEmail, tt.args.duration)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetGoogleCloudAccessToken() error = %v, wantErr %v", err, tt.wantErr)
 			}

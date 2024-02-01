@@ -24,6 +24,7 @@ type Args struct {
 	PoolID     string `envconfig:"PLUGIN_POOL_ID"`
 	ProviderID string `envconfig:"PLUGIN_PROVIDER_ID"`
 	ServiceAcc string `envconfig:"PLUGIN_SERVICE_ACCOUNT_EMAIL_ID"`
+	Duration   string `envconfig:"PLUGIN_DURATION"`
 }
 
 // Exec executes the plugin.
@@ -32,12 +33,18 @@ func Exec(ctx context.Context, args Args) error {
 		return err
 	}
 
+	if args.Duration == "" {
+		args.Duration = "3600s"
+	} else {
+		args.Duration = args.Duration + "s"
+	}
+
 	federalToken, err := GetFederalToken(args.OIDCToken, args.ProjectID, args.PoolID, args.ProviderID)
 	if err != nil {
 		return err
 	}
 
-	accessToken, err := GetGoogleCloudAccessToken(federalToken, args.ServiceAcc)
+	accessToken, err := GetGoogleCloudAccessToken(federalToken, args.ServiceAcc, args.Duration)
 
 	if err != nil {
 		return err
