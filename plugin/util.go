@@ -45,7 +45,7 @@ func GetFederalToken(idToken, projectNumber, poolId, providerId string) (string,
 	return tokenResponse.AccessToken, nil
 }
 
-func GetGoogleCloudAccessToken(federatedToken string, serviceAccountEmail string) (string, error) {
+func GetGoogleCloudAccessToken(federatedToken string, serviceAccountEmail string, duration string) (string, error) {
 	ctx := context.Background()
 	tokenSource := &staticTokenSource{
 		token: &oauth2.Token{AccessToken: federatedToken},
@@ -57,7 +57,8 @@ func GetGoogleCloudAccessToken(federatedToken string, serviceAccountEmail string
 
 	name := "projects/-/serviceAccounts/" + serviceAccountEmail
 	rb := &iamcredentials.GenerateAccessTokenRequest{
-		Scope: []string{"https://www.googleapis.com/auth/cloud-platform"},
+		Scope:    []string{"https://www.googleapis.com/auth/cloud-platform"},
+		Lifetime: duration,
 	}
 
 	resp, err := service.Projects.ServiceAccounts.GenerateAccessToken(name, rb).Do()
