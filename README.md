@@ -26,7 +26,7 @@ To learn how to utilize Drone plugins in Harness CI, please consult the provided
 
 This plugin also requires an OIDC token `PLUGIN_OIDC_TOKEN_ID`, provided as a stage variable.
 
-Please provide the `duration` in seconds, for example, the default value is 1 hour, i.e, 3600 seconds.
+Please provide the `duration` in seconds, for example, the default value is 1 hour, i.e, 3600 seconds. The service account must have the `iam.allowServiceAccountCredentialLifetimeExtension` permission to set a custom duration.
 
 The plugin outputs the access token in the form of an environment variable that can be accessed in the subsequent pipeline steps like this: `<+steps.STEP_ID.output.outputVariables.GCLOUD_ACCESS_TOKEN>`
 
