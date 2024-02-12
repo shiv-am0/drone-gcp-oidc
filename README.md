@@ -30,7 +30,7 @@ This plugin also requires an OIDC token `PLUGIN_OIDC_TOKEN_ID`, provided as a st
 
 Please provide the `duration` in seconds, for example, the default value is 1 hour, i.e, 3600 seconds. The service account must have the `iam.allowServiceAccountCredentialLifetimeExtension` permission to set a custom duration.
 
-The plugin outputs a `credentials.json` if the `create_credentials_file` flag is set to `true`, only to be used with `gradle`, for use with `gcloud cli`, use `GCLOUD_ACCESS_TOKEN`. The path is exported to `GCLOUD_CREDENTIALS_FILE`.
+The plugin outputs a `credentials.json` if the `create_credentials_file` flag is set to `true`, only to be used with `gradlew`, for use with `gcloud cli`, use `GCLOUD_ACCESS_TOKEN`. The `credentials.json` path is exported to `GCLOUD_CREDENTIALS_FILE` variable, which can be used as `<+steps.STEP_ID.output.outputVariables.GCLOUD_CREDENTIALS_FILE>`
 
 The plugin outputs the access token in the form of an environment variable that can be accessed in the subsequent pipeline steps like this: `<+steps.STEP_ID.output.outputVariables.GCLOUD_ACCESS_TOKEN>`
 
