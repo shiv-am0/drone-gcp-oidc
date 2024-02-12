@@ -1,151 +1,91 @@
-// Copyright 2020 the Drone Authors. All rights reserved.
-// Use of this source code is governed by the Blue Oak Model License
-// that can be found in the LICENSE file.
+# drone-gcp-oidc
 
-package plugin
+- [Synopsis](#Synopsis)
+- [Parameters](#Parameters)
+- [Notes](#Notes)
+- [Plugin Image](#Plugin-Image)
+- [Examples](#Examples)
 
-import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"os"
-	"strconv"
-	"strings"
-	"time"
+## Synopsis
 
-	"github.com/sirupsen/logrus"
-)
+This plugin generates an access token through the OIDC token and outputs it as an environment variable. This variable can be utilized in subsequent pipeline steps to control Google Cloud Services through the gcloud CLI or API using curl.
 
-// Args provides plugin execution arguments.
-type Args struct {
-	Pipeline
+To learn how to utilize Drone plugins in Harness CI, please consult the provided [documentation](https://developer.harness.io/docs/continuous-integration/use-ci/use-drone-plugins/run-a-drone-plugin-in-ci).
 
-	// Level defines the plugin log level.
-	Level string `envconfig:"PLUGIN_LOG_LEVEL"`
+## Parameters
 
-	OIDCToken   string `envconfig:"PLUGIN_OIDC_TOKEN_ID"`
-	ProjectID   string `envconfig:"PLUGIN_PROJECT_ID"`
-	PoolID      string `envconfig:"PLUGIN_POOL_ID"`
-	ProviderID  string `envconfig:"PLUGIN_PROVIDER_ID"`
-	ServiceAcc  string `envconfig:"PLUGIN_SERVICE_ACCOUNT_EMAIL_ID"`
-	Duration    string `envconfig:"PLUGIN_DURATION"`
-	CreateCreds bool   `envconfig:"PLUGIN_CREATE_CREDENTIALS_FILE"`
-	CredsPath   string `envconfig:"PLUGIN_CREDENTIALS_FILE_PATH"`
-}
+| Parameter                                                                                                                              | Choices/<span style="color:blue;">Defaults</span> | Comments                                                        |
+|:-------------------------------------------------------------------------------------------------------------------------------------- |:------------------------------------------------- | --------------------------------------------------------------- |
+| project_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>               |                                                   | The project id associated with your GCP project.                |
+| pool_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>                  |                                                   | The pool ID for OIDC authentication.                            |
+| provider_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>              |                                                   | The provider ID for OIDC authentication.                        |
+| service_account_email_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span> |                                                   | The email address of the service account.                       |
+| duration <span style="font-size: 10px"><br/>`string`</span>                                                                            | Default: `3600`                                   | The lifecycle duration of the access token generated in seconds |
+| create_credentials_file              <span style="font-size: 10px"><br/>`boolean`</span>                                       | Default: `false`                                  | Create a credentials.json                                       |
+| credentials_file_path    <span style="font-size: 10px"><br/>`string`</span>                                                                                                                                     |                                                   | Path where credentials.json will be created                                                               |
 
-// Exec executes the plugin.
-func Exec(ctx context.Context, args Args) error {
-	if err := VerifyEnv(args); err != nil {
-		return err
-	}
+## Notes
 
-	if args.Duration == "" {
-		args.Duration = "3600s"
-	} else {
-		args.Duration = args.Duration + "s"
-	}
+This plugin also requires an OIDC token `PLUGIN_OIDC_TOKEN_ID`, provided as a stage variable.
 
-	federalToken, err := GetFederalToken(args.OIDCToken, args.ProjectID, args.PoolID, args.ProviderID)
-	if err != nil {
-		return err
-	}
+Please provide the `duration` in seconds, for example, the default value is 1 hour, i.e, 3600 seconds. The service account must have the `iam.allowServiceAccountCredentialLifetimeExtension` permission to set a custom duration.
 
-	accessToken, err := GetGoogleCloudAccessToken(federalToken, args.ServiceAcc, args.Duration)
+The plugin outputs a `credentials.json` if the `create_credentials_file` flag is set to `true`, only to be used with `gradle`, for use with `gcloud cli`, use `GCLOUD_ACCESS_TOKEN`.
 
-	if err != nil {
-		return err
-	}
+The plugin outputs the access token in the form of an environment variable that can be accessed in the subsequent pipeline steps like this: `<+steps.STEP_ID.output.outputVariables.GCLOUD_ACCESS_TOKEN>`
 
-	if args.CreateCreds {
-		credsPath, err := WriteCredentialsToFile(accessToken, args.CredsPath, args.Duration, args.OIDCToken)
-		if err != nil {
-			return err
-		}
-		logrus.Infof("credentials file written to %s\n", credsPath)
+## Plugin Image
 
-		if err := WriteEnvToFile("GCLOUD_CREDENTIALS_FILE", accessToken); err != nil {
-			return err
-		}
-	} else {
-		logrus.Infof("acess token retrieved successfully\n")
-		logrus.Infof("access token set as GCLOUD_ACCESS_TOKEN\n")
+The plugin `plugins/gcp-oidc` is available for the following architectures:
 
-		if err := WriteEnvToFile("GCLOUD_ACCESS_TOKEN", accessToken); err != nil {
-			return err
-		}
+| OS            | Tag                                |
+| ------------- | ---------------------------------- |
+| latest        | `linux-amd64/arm64, windows-amd64` |
+| linux/amd64   | `linux-amd64`                      |
+| linux/arm64   | `linux-arm64`                      |
+| windows/amd64 | `windows-amd64`                    |
 
-		logrus.Infof("access token written to env\n")
-	}
+## Examples
 
-	return nil
-}
+```
+# Plugin YAML
+- step:
+    type: Plugin
+    name: drone-gcp-oidc-plugin
+    identifier: drone_gcp_oidc_plugin
+    spec:
+        connectorRef: harness-docker-connector
+        image: plugins/gcp-oidc
+        settings:
+                project_id: 22819301
+                pool_id: d8291ka22
+                service_account_email_id: test-gcp@harness.io
+                provider_id: svr-account1
 
-func VerifyEnv(args Args) error {
-	if args.OIDCToken == "" {
-		return fmt.Errorf("oidc-token is not provided")
-	}
-	if args.ProjectID == "" {
-		return fmt.Errorf("project-id is not provided")
-	}
-	if args.PoolID == "" {
-		return fmt.Errorf("pool-id is not provided")
-	}
-	if args.ProviderID == "" {
-		return fmt.Errorf("provider-id is not provided")
-	}
-	if args.ServiceAcc == "" {
-		return fmt.Errorf("service account email is not provided")
-	}
-	return nil
-}
+- step:
+    type: Plugin
+    name: drone-gcp-oidc-plugin
+    identifier: drone_gcp_oidc_plugin
+    spec:
+        connectorRef: harness-docker-connector
+        image: plugins/gcp-oidc
+        settings:
+                project_id: 22819301
+                pool_id: d8291ka22
+                service_account_email_id: test-gcp@harness.io
+                provider_id: svr-account1
+                duration: 7200
 
-func WriteEnvToFile(key, value string) error {
-	outputFile, err := os.OpenFile(os.Getenv("DRONE_OUTPUT"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to open output file: %w", err)
-	}
+# Run step to use the access token to list the compute zones
+- step:
+    type: Run
+    name: List Compute Engine Zone
+    identifier: list_zones
+    spec:
+        shell: Sh
+        command: |-
+            curl -H "Authorization: Bearer <+steps.STEP_ID.output.outputVariables.GCLOUD_ACCESS_TOKEN>" \
+            "https://compute.googleapis.com/compute/v1/projects/[PROJECT_ID]/zones/[ZONE]/instances"
+```
 
-	defer outputFile.Close()
-
-	_, err = fmt.Fprintf(outputFile, "%s=%s\n", key, value)
-	if err != nil {
-		return fmt.Errorf("failed to write to env: %w", err)
-	}
-
-	return nil
-}
-
-func WriteCredentialsToFile(token, path, duration, idToken string) (string, error) {
-	durationInt, err := strconv.Atoi(strings.TrimSuffix(duration, "s"))
-	if err != nil {
-		return "", fmt.Errorf("failed to convert duration to int: %w", err)
-	}
-
-	path = strings.TrimSuffix(path, "/") + "/credentials.json"
-
-	expiryTime := time.Now().Add(time.Duration(durationInt) * time.Second).Format(time.RFC3339)
-
-	credentials := struct {
-		Credential struct {
-			AccessToken string  `json:"access_token"`
-			IdToken     *string `json:"id_token"`
-			TokenExpiry string  `json:"token_expiry"`
-		} `json:"credential"`
-	}{}
-
-	credentials.Credential.AccessToken = token
-	credentials.Credential.IdToken = &idToken
-	credentials.Credential.TokenExpiry = expiryTime
-
-	credentialsJSON, err := json.MarshalIndent(credentials, "", "  ")
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal credentials to JSON: %w", err)
-	}
-
-	err = os.WriteFile(path, credentialsJSON, 0644)
-	if err != nil {
-		return "", fmt.Errorf("failed to write credentials file: %w", err)
-	}
-
-	return path, nil
-}
+> <span style="font-size: 14px; margin-left:5px; background-color: #d3d3d3; padding: 4px; border-radius: 4px;">ℹ️ If you notice any issues in this documentation, you can [edit this document](https://github.com/harness-community/drone-gcp-oidc/blob/main/README.md) to improve it.</span>
