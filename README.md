@@ -21,12 +21,16 @@ To learn how to utilize Drone plugins in Harness CI, please consult the provided
 | provider_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span>              |                                                   | The provider ID for OIDC authentication.                        |
 | service_account_email_id <span style="font-size: 10px"><br/>`string`</span> <span style="color:red; font-size: 10px">`required`</span> |                                                   | The email address of the service account.                       |
 | duration <span style="font-size: 10px"><br/>`string`</span>                                                                            | Default: `3600`                                   | The lifecycle duration of the access token generated in seconds |
+| create_credentials_file <span style="font-size: 10px"><br/>`boolean`</span>                                                            | Default: `false`                                  | Create a credentials.json                                       |
+| credentials_file_path <span style="font-size: 10px"><br/>`string`</span>                                                               |                                                   | Path where credentials.json will be created                     |
 
 ## Notes
 
 This plugin also requires an OIDC token `PLUGIN_OIDC_TOKEN_ID`, provided as a stage variable.
 
 Please provide the `duration` in seconds, for example, the default value is 1 hour, i.e, 3600 seconds. The service account must have the `iam.allowServiceAccountCredentialLifetimeExtension` permission to set a custom duration.
+
+The plugin outputs a `credentials.json` if the `create_credentials_file` flag is set to `true`, only to be used with `gradle`, for use with `gcloud cli`, use `GCLOUD_ACCESS_TOKEN`. The path is exported to `GCLOUD_CREDENTIALS_FILE`.
 
 The plugin outputs the access token in the form of an environment variable that can be accessed in the subsequent pipeline steps like this: `<+steps.STEP_ID.output.outputVariables.GCLOUD_ACCESS_TOKEN>`
 
