@@ -130,6 +130,10 @@ func WriteApplicationDefaultCredentials(token, duration, projectNumber, poolId, 
 		return "", fmt.Errorf("failed to get home directory: %w", err)
 	}
 
+	// homeDir := filepath.Join("/home", "/harness")
+
+	fmt.Println("HOME dir: ", homeDir)
+
 	// Define the directory path
 	dirPath := filepath.Join(homeDir, ".config", "gcloud")
 
